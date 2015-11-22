@@ -1,0 +1,12 @@
+<GUI>
+	<GUI/>
+<Port>15120</Port>
+	<Host_01>136</Host_01>
+	<Host_02>168</Host_02>
+	<Host_03>1</Host_03>
+	<Host_04>1</Host_04>
+<WireFrame_Mesh>1</WireFrame_Mesh>
+	<Line_Width>3</Line_Width>
+	<Draw_Mesh>1</Draw_Mesh>
+	<Debug_Mesh>1</Debug_Mesh>
+</GUI>
