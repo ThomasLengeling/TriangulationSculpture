@@ -32,6 +32,5 @@
 *.cbp
 *.workspace
 *.layout
-*.make
 
 obj
