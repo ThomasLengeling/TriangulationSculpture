@@ -26,3 +26,12 @@
 *.exe
 *.out
 *.app
+
+# CB
+
+*.cbp
+*.workspace
+*.layout
+*.make
+
+obj
