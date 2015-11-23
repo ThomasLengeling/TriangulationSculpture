@@ -1,3 +1,22 @@
+/*
+ Copyright (c) 2015, Thomas Sanchez Lengeling - All rights reserved.
+ This code is intended for use with the C++ openFrameWork library
+ Redistribution and use in source and binary forms, with or without modification, are permitted provided that
+ the following conditions are met:
+	* Redistributions of source code must retain the above copyright notice, this list of conditions and
+	the following disclaimer.
+	* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and
+	the following disclaimer in the documentation and/or other materials provided with the distribution.
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+ WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #pragma once
 
 #include "ofMain.h"
@@ -17,10 +36,12 @@ namespace tri{
     public:
 
       ImageCollection(){
-        time = 1.0;
+        mTime = 1.0;
+        mTransitionInc = 0.005;
+
         mCurrentImgIdx = -1;
-        mNextImgIdx    = 0;
-        mNextColor     = ofFloatColor(1, 1, 1);
+        mNextImgIdx    =  0;
+        mNextColor     =  ofFloatColor(1, 1, 1);
       }
 
        static ImageCollectionRef create(){
@@ -57,10 +78,10 @@ namespace tri{
         }
 
         void update(){
-          time += 0.001;
+          mTime += mTransitionInc;
 
-          if(time >= 1.0){
-            time = 0;
+          if(mTime >= 1.0){
+            mTime = 0;
             if(mImages.size() > 0){
                 mCurrentImgIdx++;
 
@@ -80,6 +101,10 @@ namespace tri{
 
         }
 
+        void setTransitionInc(float val){
+          mTransitionInc = val;
+        }
+
     protected:
         std::vector<ofImage> mImages;
 
@@ -89,7 +114,8 @@ namespace tri{
         int           mCurrentImgIdx;
         int           mNextImgIdx;
 
-        float         time;
+        float         mTime;
+        float         mTransitionInc;
   };
 
 
@@ -97,9 +123,7 @@ namespace tri{
     public:
       TriangleManager();
 
-      static  TriangleManagerRef create(){
-          return std::make_shared<TriangleManager>();
-      }
+      static  TriangleManagerRef create(){ return std::make_shared<TriangleManager>(); }
 
       void loadImages();
 
@@ -119,10 +143,17 @@ namespace tri{
       int        getNumberOfTriangles(){return mTriangles.size();}
       Triangle * getTriangle(int index){return mTriangles.at(index);}
 
+
+      void setIncrementTimeColors(float val){ mImagesSequences->setTransitionInc(val); }
+      void setImageSequence(int val){ mCurrentImgSeq = val; }
+
     private:
 
       std::vector<Triangle *>         mTriangles;
+
       std::vector<ImageCollectionRef> mImagesSequences;
+      int                             mCurrentImgSeq;
+
       ofMesh                          mMesh;
   };
 
