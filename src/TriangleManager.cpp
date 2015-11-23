@@ -49,7 +49,7 @@ namespace tri{
          for(auto & tri : mTriangles){
 
             if(tri->isPointInTriangle(particle->getPosition())){
-              particle->setColor(ofColor(255, 0, 0));
+              particle->setColor(ofColor(255, 255, 0));
               particle->setInsideTriangle(true);
             }
           }
@@ -74,8 +74,8 @@ namespace tri{
         //mMesh.setColor(id, col);
         if(particle->isInsideTriangle()){
           particle->update();
-          ofVec3f targetPos = particle->getPosition();
-          mMesh.setVertex(id, ofPoint(targetPos.x, targetPos.y, 0));
+          ofVec3f movingParticle = particle->getMovingPos();
+          mMesh.setVertex(id, ofPoint(movingParticle.x, movingParticle.y, 0));
         }
       }
 
@@ -131,6 +131,11 @@ namespace tri{
             if( tri->getParticleA()->isInsideTriangle()){
                 tri->getParticleA()->update();
                 ofVec3f targetPos =  tri->getParticleA()->getPosition();
+
+                if( tri->getParticleA()->isTargetPoint()){
+                  targetPos =  tri->getParticleA()->getMovingPos();
+                }
+
                 mMesh.addVertex(ofPoint(targetPos.x, targetPos.y, 0));
             }else{
                 mMesh.addVertex(ofPoint(posAX, posAY));
@@ -141,6 +146,11 @@ namespace tri{
              if( tri->getParticleB()->isInsideTriangle()){
                 tri->getParticleB()->update();
                 ofVec3f targetPos =  tri->getParticleB()->getPosition();
+
+                if( tri->getParticleB()->isTargetPoint()){
+                  targetPos =  tri->getParticleB()->getMovingPos();
+                }
+
                 mMesh.addVertex(ofPoint(targetPos.x, targetPos.y, 0));
             }else{
                 mMesh.addVertex(ofPoint(posBX, posBY));
@@ -151,6 +161,11 @@ namespace tri{
             if( tri->getParticleC()->isInsideTriangle()){
                 tri->getParticleC()->update();
                 ofVec3f targetPos =  tri->getParticleC()->getPosition();
+
+                if( tri->getParticleC()->isTargetPoint()){
+                  targetPos =  tri->getParticleC()->getMovingPos();
+                }
+
                 mMesh.addVertex(ofPoint(targetPos.x, targetPos.y, 0));
             }else{
                 mMesh.addVertex(ofPoint(posCX, posCY));

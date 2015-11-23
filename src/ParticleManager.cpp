@@ -56,14 +56,25 @@ namespace tri{
     }
 
     void ParticleManager::updateParticlePos(int index, ofVec3f pos){
+
+      if(mParticles.at(index)->isInsideTriangle() && mParticles.at(index)->isTargetPoint()){
         mParticles.at(index)->setPosition(pos);
+        mParticles.at(index)->setOriginalPos(pos);
+      }
+
+      if( !mParticles.at(index)->isTargetPoint()){
+            mParticles.at(index)->setPosition(pos);
+      }
+
     }
 
     void ParticleManager::updateTargetPos(int index, ofVec3f pos){
+        mParticles.at(index)->setOriginalPos(mParticles.at(index)->getPosition());
         mParticles.at(index)->setTargetPos(pos);
     }
 
     void ParticleManager::updateTargetId(int index, int targetId){
+      mParticles.at(index)->enableTargetPoint(true);
       mParticles.at(index)->setTargetId(targetId);
     }
 

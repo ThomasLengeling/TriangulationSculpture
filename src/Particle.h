@@ -19,13 +19,18 @@ namespace tri{
         mTargetPos = obj.mTargetPos;
         mVel = obj.mVel;
         mCol = obj.mCol;
-        mOriginPos = obj.mPos;
+        mOriginalPos = obj.mPos;
         mInsideTriangle = obj.mInsideTriangle;
       //  mTargetPos = obj.mTargetPos;
 
         mParticleIndex = obj.mParticleIndex;
         mTargetIndex   = obj.mTargetIndex;
         timerDir       = obj.timerDir;
+
+        mTargetPoint = false;
+
+        timer = 0.0;
+        timerDir =1;
      }
 
     Particle(){
@@ -34,16 +39,13 @@ namespace tri{
         mCol = ofColor(255);
         mInsideTriangle = false;
         timer = 0.0;
-        timerDir =1;
+        timerDir = 1;
+
+        mTargetPoint = false;
     }
 
     static ParticleRef create(){
         return std::make_shared<Particle>();
-    }
-
-    void setPosition(const ofVec3f & pos){
-        mPos = pos;
-        mOriginPos = pos;
     }
 
     void addVelocity(const ofVec3f & vel){
@@ -70,16 +72,33 @@ namespace tri{
       return mTargetIndex;
     }
 
+
     ofVec3f getPosition(){
         return mPos;
     }
 
-    void setTargetPos(ofVec3f pos){
-        mTargetPos = pos;
-    }
-
     ofVec3f getTargetPos(){
       return mTargetPos;
+    }
+
+    ofVec3f getOrignalPos(){
+      return mOriginalPos;
+    }
+
+    ofVec3f getMovingPos(){
+      return mMovingPos;
+    }
+
+    void setPosition(ofVec3f pos){
+        mPos = pos;
+    }
+
+    void setOriginalPos(ofVec3f pos){
+      mOriginalPos = pos;
+    }
+
+    void setTargetPos(ofVec3f pos){
+        mTargetPos = pos;
     }
 
     void setInsideTriangle(bool set){
@@ -90,12 +109,21 @@ namespace tri{
       return mInsideTriangle;
     }
 
+    bool isTargetPoint(){
+      return mTargetPoint;
+    }
+
+    void enableTargetPoint(bool target){
+      mTargetPoint = target;
+    }
+
 
     void update(){
       if(mTargetIndex != -1){
-        mPos.x = (mTargetPos.x - mOriginPos.x)*timer + mOriginPos.x;
-        mPos.y = (mTargetPos.y - mOriginPos.y)*timer + mOriginPos.y;
-        timer += 0.002 * timerDir;
+        mMovingPos.x = (mTargetPos.x - mOriginalPos.x)*timer + mOriginalPos.x;
+        mMovingPos.y = (mTargetPos.y - mOriginalPos.y)*timer + mOriginalPos.y;
+
+        timer += 0.02 * timerDir;
 
         if(timer >= 1.0){
           timerDir *=-1;
@@ -113,28 +141,45 @@ namespace tri{
     float  getZ(){return mPos.z;}
 
     void drawPoint(){
-        ofSetColor(mCol);
-        ofEllipse(mPos.x, mPos.y, 10, 10);
+        if(mTargetIndex != -1){
+          ofSetColor(0, 0, 255);
+          ofEllipse(mTargetPos.x, mTargetPos.y, 10, 10);
+          ofEllipse(mOriginalPos.x, mOriginalPos.y, 10, 10);
 
-        ofSetColor(255, 0, 0);
-        ofEllipse(mTargetPos.x, mTargetPos.y, 10, 10);
 
-        ofSetColor(0, 255, 0);
-        ofEllipse(mOriginPos.x, mOriginPos.y, 10, 10);
+          ofEllipse(mMovingPos.x, mMovingPos.y, 14, 14);
 
-        if(mTargetIndex != -1)
-         ofLine(mOriginPos.x, mOriginPos.y, mTargetPos.x, mTargetPos.y);
+          ofSetColor(0, 255, 0);
+          ofLine(mOriginalPos.x, mOriginalPos.y, mTargetPos.x, mTargetPos.y);
+       }else{
+         ofSetColor(mCol);
+         ofEllipse(mPos.x, mPos.y, 10, 10);
+       }
+
+       if(mTargetPoint){
+         ofSetColor(0, 255, 255);
+         ofEllipse(mTargetPos.x, mTargetPos.y, 10, 10);
+         ofEllipse(mOriginalPos.x, mOriginalPos.y, 10, 10);
+       }
+
     }
 
+
+
   private:
-    ofVec3f     mPos;
+    ofVec3f     mPos;  //original
+
     ofVec3f     mTargetPos;
-    ofVec3f     mOriginPos;
+    ofVec3f     mOriginalPos;
+
+    ofVec3f     mMovingPos;
 
     ofVec3f     mVel;
     ofColor     mCol;
 
     bool        mInsideTriangle;
+
+    bool        mTargetPoint;
 
     int         mParticleIndex;
     int         mTargetIndex;
