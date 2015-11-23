@@ -1,6 +1,6 @@
 /*
  Copyright (c) 2015, Thomas Sanchez Lengeling - All rights reserved.
- This code is intended for use with the C++ openFrameWork library
+ This code is intended for use with the C++ openFrameworks library
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that
  the following conditions are met:
 	* Redistributions of source code must retain the above copyright notice, this list of conditions and
@@ -69,9 +69,9 @@ namespace tri{
             mCurrentColor = ofFloatColor( currColor.r/255.0, currColor.g/255.0, currColor.b/255.0, currColor.a/255.0 );
             mNextColor    = ofFloatColor( nextColor.r/255.0, nextColor.g/255.0, nextColor.b/255.0, nextColor.a/255.0 );
 
-            mNewColor.r = (mNextColor.r - mCurrentColor.r) * time + mCurrentColor.r;
-            mNewColor.g = (mNextColor.g - mCurrentColor.g) * time + mCurrentColor.g;
-            mNewColor.b = (mNextColor.b - mCurrentColor.b) * time + mCurrentColor.b;
+            mNewColor.r = (mNextColor.r - mCurrentColor.r) * mTime + mCurrentColor.r;
+            mNewColor.g = (mNextColor.g - mCurrentColor.g) * mTime + mCurrentColor.g;
+            mNewColor.b = (mNextColor.b - mCurrentColor.b) * mTime + mCurrentColor.b;
           }
 
           return mNewColor;
@@ -134,7 +134,6 @@ namespace tri{
       void drawWireFrameMesh();
 
       void renderMesh();
-      void updateColorMesh();
 
       void cleanMesh(){mTriangles.clear(); mParticles.clear(); mMesh.clear(); }
 
@@ -144,10 +143,16 @@ namespace tri{
       Triangle * getTriangle(int index){return mTriangles.at(index);}
 
 
-      void setIncrementTimeColors(float val){ mImagesSequences->setTransitionInc(val); }
-      void setImageSequence(int val){ mCurrentImgSeq = val; }
+      void setIncrColorTimer(float val){ mImagesSequences.at(mCurrentImgSeq)->setTransitionInc(val); }
+      void setImageSeq(int val){ mCurrentImgSeq = val; }
+
+      void setIncrTargetTimer(float val){mTimeInc = val;}
+
+      void toggleTimer(bool timer){ if(!timer){mTimer = 0;} mStopTimer = timer; }
 
     private:
+
+      void updateTimers();
 
       std::vector<Triangle *>         mTriangles;
 
@@ -155,6 +160,14 @@ namespace tri{
       int                             mCurrentImgSeq;
 
       ofMesh                          mMesh;
+
+      float                           mTimer;
+
+      float                           mTimeInc;
+
+      int                             mTimerDir;
+
+      bool                            mStopTimer;
   };
 
 }

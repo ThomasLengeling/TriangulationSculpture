@@ -1,6 +1,6 @@
 /*
  Copyright (c) 2015, Thomas Sanchez Lengeling - All rights reserved.
- This code is intended for use with the C++ openFrameWork library
+ This code is intended for use with the C++ openFrameworks library
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that
  the following conditions are met:
 	* Redistributions of source code must retain the above copyright notice, this list of conditions and
@@ -39,12 +39,8 @@ namespace tri{
 
         mParticleIndex = obj.mParticleIndex;
         mTargetIndex   = obj.mTargetIndex;
-        timerDir       = obj.timerDir;
 
         mTargetPoint = false;
-
-        timer = 0.0;
-        timerDir =1;
      }
 
     Particle(){
@@ -52,9 +48,6 @@ namespace tri{
         mTargetIndex   = -1;
         mCol = ofColor(255);
         mInsideTriangle = false;
-        timer = 0.0;
-        timerDir = 1;
-
         mTargetPoint = false;
     }
 
@@ -132,20 +125,10 @@ namespace tri{
     }
 
 
-    void update(){
+    void update(float time){
       if(mTargetIndex != -1){
-        mMovingPos.x = (mTargetPos.x - mOriginalPos.x)*timer + mOriginalPos.x;
-        mMovingPos.y = (mTargetPos.y - mOriginalPos.y)*timer + mOriginalPos.y;
-
-        timer += 0.02 * timerDir;
-
-        if(timer >= 1.0){
-          timerDir *=-1;
-        }
-        if(timer <= 0.0){
-          timerDir *=-1;
-        }
-
+        mMovingPos.x = (mTargetPos.x - mOriginalPos.x) * time + mOriginalPos.x;
+        mMovingPos.y = (mTargetPos.y - mOriginalPos.y) * time + mOriginalPos.y;
       }
 
     }
@@ -198,7 +181,5 @@ namespace tri{
     int         mParticleIndex;
     int         mTargetIndex;
 
-    float       timer;
-    int         timerDir;
   };
 }

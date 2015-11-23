@@ -1,6 +1,6 @@
 /*
  Copyright (c) 2015, Thomas Sanchez Lengeling - All rights reserved.
- This code is intended for use with the C++ openFrameWork library
+ This code is intended for use with the C++ openFrameworks library
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that
  the following conditions are met:
 	* Redistributions of source code must retain the above copyright notice, this list of conditions and

@@ -76,8 +76,10 @@ void ofApp::setupGUI(){
     gui.add(mWireFrameWidth.setup("Line Width", 3, 1, 6));
     gui.add(mButtonGenerateTriangles.setup("Generate Inside"));
     gui.add(mButtonMoveTriangles.setup("Enable Move"));
-    gui.add(mSpeedColorSlider.setup("Color Transition", 0.01, 0, 1));
-    gui.add(mSpeedTargetSlider.setup("Target Transition", 0.01, 0, 1));
+    gui.add(mTimeColorSlider.setup("Color Inc", 0.001, 0.0, 0.1));
+    gui.add(mImgIndexSlider.setup("Img Sequence", 0, 0, 4));
+    gui.add(mSpeedTargetSlider.setup("Target Transition", 0.001, 0, 0.1));
+    gui.add(mStopTargetTimer.setup("Target Stop", false));
 
     mHideGUI = true;
 
@@ -162,7 +164,7 @@ void ofApp::loadJSON(){
     }
 
     mTriangleManager->renderMesh();
-    mTriangleManager->updateColorMesh();
+    //mTriangleManager->updateColorMesh();
     mTriangleManager->updateTargetPositions();
 }
 
@@ -211,24 +213,25 @@ void ofApp::saveJSON(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-
-
-
 //  mTriangleManager->updateColorMesh();
     mTriangleManager->renderMesh();
 
+    mTriangleManager->setIncrColorTimer(mTimeColorSlider);
+    mTriangleManager->setImageSeq(mImgIndexSlider);
+    mTriangleManager->setIncrTargetTimer(mSpeedTargetSlider);
+    mTriangleManager->toggleTimer(mStopTargetTimer);
 
     if(mButtonMoveTriangles){
          mTriangleManager->generateTriangles();
     }
 
-// Osc Receiver
-// hide old messages
-	for(int i = 0; i < NUM_MSG_STRINGS; i++){
-		if(timers[i] < ofGetElapsedTimef()){
-			msg_strings[i] = "";
-		}
-	}
+    // Osc Receiver
+    // hide old messages
+    for(int i = 0; i < NUM_MSG_STRINGS; i++){
+      if(timers[i] < ofGetElapsedTimef()){
+			     msg_strings[i] = "";
+      }
+    }
 
 	// check for waiting messages
 	while(mReceiver.hasWaitingMessages()){

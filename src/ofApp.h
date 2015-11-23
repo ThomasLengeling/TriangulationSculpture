@@ -1,6 +1,6 @@
 /*
  Copyright (c) 2015, Thomas Sanchez Lengeling - All rights reserved.
- This code is intended for use with the C++ openFrameWork library
+ This code is intended for use with the C++ openFrameworks library
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that
  the following conditions are met:
 	* Redistributions of source code must retain the above copyright notice, this list of conditions and
@@ -39,7 +39,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
-        void exit();
+    void exit();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -60,26 +60,29 @@ class ofApp : public ofBaseApp{
     void                 setupGUI();
     void                 saveGUIValues();
 
-    ofxButton            mButtonXMLSave;
+    ofxButton      mButtonXMLSave;
     ofxButton			 mButtonOSC;
     ofxButton			 mButtonSaveJSON;
-    ofxButton            mButtonResetMesh;
+    ofxButton      mButtonResetMesh;
 
     ofxToggle			 mDebugMesh;
 
     ofxToggle			 mDrawMesh;
     ofxToggle			 mWireFrameMesh;
 
-	ofxToggle 		     mButtonGenerateTriangles;
-    ofxToggle		     mButtonMoveTriangles;
+		ofxToggle 		     	mButtonGenerateTriangles;
+    ofxToggle		     	  mButtonMoveTriangles;
+
+		ofxToggle						 mStopTargetTimer;
 
     ofxSlider<int>       mBlendMode;
 
     ofxSlider<int>       mWireFrameWidth;
 
     //OSC send msg
-    ofxOscSender 		 mSender;
-    ofxOscReceiver		 mReceiver;
+    ofxOscSender 		 		 mSender;
+    ofxOscReceiver		 	 mReceiver;
+
     ofxSlider<int>       mPortSlider;
 
     ofxSlider<int>       mHostSlider01;
@@ -87,8 +90,12 @@ class ofApp : public ofBaseApp{
     ofxSlider<int>       mHostSlider03;
     ofxSlider<int>       mHostSlider04;
 
-    ofxSlider<float> 	 mSpeedColorSlider;
-	ofxSlider<float>     mSpeedTargetSlider;
+    ofxSlider<float> 	 	 mSpeedColorSlider;
+	  ofxSlider<float>     mSpeedTargetSlider;
+
+	  //Image changers
+	  ofxSlider<float>  		mTimeColorSlider;
+	  ofxSlider<int>   			mImgIndexSlider;
 
     //Blend
     void                 switchBlendMode();
@@ -131,6 +138,9 @@ class ofApp : public ofBaseApp{
     int mtempTriA;
     int mtempTriB;
     int mtempTriC;
+
+
+
 
     //-----------MASK-----------------------------------
     Masker mask;
