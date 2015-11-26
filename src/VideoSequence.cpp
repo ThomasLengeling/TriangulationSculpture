@@ -30,24 +30,11 @@ namespace video{
 
     dir.listDir();
 
-    int istep = 0;
-
     for(int j = 0; j < dir.numFiles(); j++){
       ofImage img;
       img.loadImage(dir.getPath(j));
       ofLogNotice(dir.getPath(j));
       mImageSeq.push_back(img);
-
-      //load only 5 seconds if in debug mode
-      #ifdef _DEBUG
-      if (istep == 30 * 5){
-        break;
-      }
-      istep++;
-      #else
-
-     #endif
-
     }
 
     ofLogVerbose("number of Images loaded: ")<<mImageSeq.size()<<std::endl;
@@ -63,7 +50,7 @@ namespace video{
       mCurrentFrame = 0;
       ofLogVerbose("Start playing") <<std::endl;
     }
-    
+
   }
 
   void VideoSequence::pause()
