@@ -1,6 +1,7 @@
 #include "ofApp.h"
 
 using namespace tri;
+using namespace video;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -44,6 +45,17 @@ void ofApp::setup(){
   foto.loadImage("foto.jpg");
 
   mDrawMask = false;
+
+
+  mVideoSequence = VideoSequence::create();
+
+  mVideoSequence->loadSequenceFromDir("movie01");
+
+  mVideoSequence->setLooping(false);
+  mVideoSequence->setFrameRate(30.f);
+  mVideoSequence->pause();
+
+
 }
 
 void ofApp::setupGUI(){
@@ -264,6 +276,71 @@ void ofApp::update(){
 			// clear the next line
 			msg_strings[current_msg_string] = "";
 		}
+
+
+    if(mVideoSequence->isPlaying()){
+        mVideoSequence->update();
+    }
+}
+
+void ofApp::draw(){
+
+   ofBackground(ofColor(0));
+
+   switchBlendMode();
+
+    if(enableViewFoto){
+        ofPushStyle();
+	      ofSetColor(255, 255, 255);
+	      foto.draw(250, 50, 480, 640);
+        ofPopStyle();
+    }
+    if(mDrawMesh){
+      mTriangleManager->drawMesh();
+    }
+
+    if(mWireFrameMesh){
+      ofSetLineWidth(int(mWireFrameWidth));
+      mTriangleManager->drawWireFrameMesh();
+    }
+
+    if(mDebugMesh){
+      mTriangleManager->drawPoints();
+    }
+
+
+//OSC Receiver
+/*
+	string buf;
+	buf = "listening for osc messages on port" + ofToString(PORT);
+	ofDrawBitmapString(buf, 400, 20);
+
+	for(int i = 0; i < NUM_MSG_STRINGS; i++){
+		ofDrawBitmapString(msg_strings[i], 400, 40 + 15 * i);
+	}
+
+	for (int i = 0; i < 4; i++) {
+		ofDrawBitmapString(ofToString(messages[0]), messages[i+1], messages[i+2]);
+	}
+*/
+
+	//MASK
+
+    if(mDrawMask){
+        mask.draw();
+    }
+
+
+    if(mVideoSequence->isPlaying()){
+        ofImage frame = mVideoSequence->getCurrentFrame();
+        frame.draw(0, 0);
+    }
+
+        //GUI
+    if( !mHideGUI ){
+        gui.draw();
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -294,64 +371,6 @@ void ofApp::switchBlendMode()
 }
 
 
-void ofApp::draw(){
-
-   ofBackground(ofColor(0));
-
-   switchBlendMode();
-
-    if(enableViewFoto){
-        ofPushStyle();
-	      ofSetColor(255, 255, 255);
-	      foto.draw(250, 50, 480, 640);
-        ofPopStyle();
-    }
-    if(mDrawMesh){
-      mTriangleManager->drawMesh();
-    }
-
-    if(mWireFrameMesh){
-      ofSetLineWidth(int(mWireFrameWidth));
-      mTriangleManager->drawWireFrameMesh();
-    }
-
-    if(mDebugMesh){
-      mTriangleManager->drawPoints();
-    }
-
-
-    if( !mHideGUI ){
-        gui.draw();
-    }
-
-//OSC Receiver
-/*
-	string buf;
-	buf = "listening for osc messages on port" + ofToString(PORT);
-	ofDrawBitmapString(buf, 400, 20);
-
-	for(int i = 0; i < NUM_MSG_STRINGS; i++){
-		ofDrawBitmapString(msg_strings[i], 400, 40 + 15 * i);
-	}
-
-	for (int i = 0; i < 4; i++) {
-		ofDrawBitmapString(ofToString(messages[0]), messages[i+1], messages[i+2]);
-	}
-*/
-
-	//MASK
-
-    if(mDrawMask){
-        mask.draw();
-    }
-
-        //GUI
-    if( !mHideGUI ){
-        gui.draw();
-    }
-
-}
-
 //--------------------------------------------------------------
 void ofApp::exit()
 {
@@ -371,8 +390,6 @@ void ofApp::keyPressed(int key){
     }
     else if(key == 'g'){
         mHideGUI = !mHideGUI;
-    }else if(key == '2'){
-        gui.loadFromFile("settings.xml");
     }else if( key == 'y'){
       enableTargetParticle = true;
     }else if(key == 'l'){
@@ -381,6 +398,10 @@ void ofApp::keyPressed(int key){
         enableAddPartMaskR = true;
     }else if(key == '1'){
         mDrawMask = !mDrawMask;
+    }else if(key == '2'){
+        mDrawVideo = true;
+        mVideoSequence->play();
+        ofLogVerbose("Start Video");
     }
 
 

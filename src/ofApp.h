@@ -29,6 +29,9 @@
 #include "Triangle.h"
 #include "Particle.h"
 #include "Masker.h"
+#include "VideoSequence.h"
+
+
 #define PORT 12345
 #define NUM_MSG_STRINGS 3
 
@@ -138,6 +141,11 @@ class ofApp : public ofBaseApp{
     int mtempTriA;
     int mtempTriB;
     int mtempTriC;
+
+
+    //---Video
+    video::VideoSequenceRef  mVideoSequence;
+    bool                     mDrawVideo;
 
 
 
