@@ -28,140 +28,56 @@ namespace tri{
   class Particle{
   public:
 
-     Particle( const Particle & obj){
-        mPos = obj.mPos;
-        mTargetPos = obj.mTargetPos;
-        mVel = obj.mVel;
-        mCol = obj.mCol;
-        mOriginalPos = obj.mPos;
-        mInsideTriangle = obj.mInsideTriangle;
-      //  mTargetPos = obj.mTargetPos;
-
-        mParticleIndex = obj.mParticleIndex;
-        mTargetIndex   = obj.mTargetIndex;
-
-        mTargetPoint = false;
-     }
-
-    Particle(){
-        mParticleIndex = -1;
-        mTargetIndex   = -1;
-        mCol = ofColor(255);
-        mInsideTriangle = false;
-        mTargetPoint = false;
-    }
+    Particle( const Particle & obj);
+    Particle();
 
     static ParticleRef create(){
         return std::make_shared<Particle>();
     }
 
-    void addVelocity(const ofVec3f & vel){
-        mVel = vel;
-    }
+    void setTweenType(int type);
 
-    void setColor(ofColor col){
-        mCol = col;
-    }
+    void addVelocity(const ofVec3f & vel);
 
-    void setParticleId(int index){
-        mParticleIndex = index;
-    }
+    void setColor(ofColor col);
 
-    int getParticleId(){
-      return mParticleIndex;
-    }
+    void setParticleId(int index);
 
-    void setTargetId(int index){
-      mTargetIndex = index;
-    }
+    int getParticleId();
 
-    int getTargetId(){
-      return mTargetIndex;
-    }
+    void setTargetId(int index);
 
+    int getTargetId();
 
-    ofVec3f getPosition(){
-        return mPos;
-    }
+    ofVec3f getPosition();
 
-    ofVec3f getTargetPos(){
-      return mTargetPos;
-    }
+    ofVec3f getTargetPos();
 
-    ofVec3f getOrignalPos(){
-      return mOriginalPos;
-    }
+    ofVec3f getOrignalPos();
 
-    ofVec3f getMovingPos(){
-      return mMovingPos;
-    }
+    ofVec3f getMovingPos();
 
-    void setPosition(ofVec3f pos){
-        mPos = pos;
-    }
+    void setPosition(ofVec3f pos);
 
-    void setOriginalPos(ofVec3f pos){
-      mOriginalPos = pos;
-    }
+    void setOriginalPos(ofVec3f pos);
 
-    void setTargetPos(ofVec3f pos){
-        mTargetPos = pos;
-    }
+    void setTargetPos(ofVec3f pos);
 
-    void setInsideTriangle(bool set){
-      mInsideTriangle = set;
-    }
+    void setInsideTriangle(bool set);
 
-    bool  isInsideTriangle(){
-      return mInsideTriangle;
-    }
+    bool  isInsideTriangle();
 
-    bool isTargetPoint(){
-      return mTargetPoint;
-    }
+    bool isTargetPoint();
 
-    void enableTargetPoint(bool target){
-      mTargetPoint = target;
-    }
+    void enableTargetPoint(bool target);
 
+    void update(float time);
 
-    void update(float time){
-      if(mTargetIndex != -1){
-        mMovingPos.x = (mTargetPos.x - mOriginalPos.x) * time + mOriginalPos.x;
-        mMovingPos.y = (mTargetPos.y - mOriginalPos.y) * time + mOriginalPos.y;
-      }
+    float  getX();
+    float  getY();
+    float  getZ();
 
-    }
-
-    float  getX(){return mPos.x;}
-    float  getY(){return mPos.y;}
-    float  getZ(){return mPos.z;}
-
-    void drawPoint(){
-        if(mTargetIndex != -1){
-          ofSetColor(0, 0, 255);
-          ofEllipse(mTargetPos.x, mTargetPos.y, 10, 10);
-          ofEllipse(mOriginalPos.x, mOriginalPos.y, 10, 10);
-
-
-          ofEllipse(mMovingPos.x, mMovingPos.y, 14, 14);
-
-          ofSetColor(0, 255, 0);
-          ofLine(mOriginalPos.x, mOriginalPos.y, mTargetPos.x, mTargetPos.y);
-       }else{
-         ofSetColor(mCol);
-         ofEllipse(mPos.x, mPos.y, 10, 10);
-       }
-
-       if(mTargetPoint){
-         ofSetColor(0, 255, 255);
-         ofEllipse(mTargetPos.x, mTargetPos.y, 10, 10);
-         ofEllipse(mOriginalPos.x, mOriginalPos.y, 10, 10);
-       }
-
-    }
-
-
+    void drawPoint();
 
   private:
     ofVec3f     mPos;  //original
@@ -174,6 +90,9 @@ namespace tri{
     ofVec3f     mVel;
     ofColor     mCol;
 
+    //Tween type
+    int         mIncType;
+
     bool        mInsideTriangle;
 
     bool        mTargetPoint;
@@ -181,5 +100,8 @@ namespace tri{
     int         mParticleIndex;
     int         mTargetIndex;
 
+    float       mTime;
+
   };
+
 }

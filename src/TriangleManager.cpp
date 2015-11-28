@@ -63,6 +63,14 @@ namespace tri{
           }
         }
 
+        ///set the same tween for each triangle
+        for(auto & tri : mTriangles){
+          int type = (int)ofRandom(0, 3);
+          tri->getParticleA()->setTweenType(type);
+          tri->getParticleB()->setTweenType(type);
+          tri->getParticleC()->setTweenType(type);
+        }
+
      }
 
     void TriangleManager::renderMesh(){

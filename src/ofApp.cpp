@@ -40,8 +40,6 @@ void ofApp::setup(){
 
   loadJSON();
 
-  mTriangleManager->generateTriangles();
-
   foto.loadImage("foto.jpg");
 
   mDrawMask = false;
@@ -49,12 +47,11 @@ void ofApp::setup(){
 
   mVideoSequence = VideoSequence::create();
 
-  mVideoSequence->loadSequenceFromDir("movie01");
+  //mVideoSequence->loadSequenceFromDir("movie01");
 
   mVideoSequence->setLooping(false);
   mVideoSequence->setFrameRate(30.f);
   mVideoSequence->pause();
-
 
 }
 
@@ -86,8 +83,6 @@ void ofApp::setupGUI(){
 
     gui.add(mWireFrameMesh.setup("WireFrame Mesh", true));
     gui.add(mWireFrameWidth.setup("Line Width", 3, 1, 6));
-    gui.add(mButtonGenerateTriangles.setup("Generate Inside"));
-    gui.add(mButtonMoveTriangles.setup("Enable Move"));
     gui.add(mTimeColorSlider.setup("Color Inc", 0.001, 0.0, 0.1));
     gui.add(mImgIndexSlider.setup("Img Sequence", 0, 0, 4));
     gui.add(mSpeedTargetSlider.setup("Target Transition", 0.001, 0, 0.1));
@@ -175,6 +170,9 @@ void ofApp::loadJSON(){
         mTriangleManager->addTriangle(tri);
     }
 
+
+    mTriangleManager->generateTriangles();
+
     mTriangleManager->renderMesh();
     //mTriangleManager->updateColorMesh();
     mTriangleManager->updateTargetPositions();
@@ -232,10 +230,6 @@ void ofApp::update(){
     mTriangleManager->setImageSeq(mImgIndexSlider);
     mTriangleManager->setIncrTargetTimer(mSpeedTargetSlider);
     mTriangleManager->toggleTimer(mStopTargetTimer);
-
-    if(mButtonMoveTriangles){
-         mTriangleManager->generateTriangles();
-    }
 
     // Osc Receiver
     // hide old messages
@@ -308,7 +302,6 @@ void ofApp::draw(){
       mTriangleManager->drawPoints();
     }
 
-
 //OSC Receiver
 /*
 	string buf;
@@ -325,11 +318,9 @@ void ofApp::draw(){
 */
 
 	//MASK
-
     if(mDrawMask){
         mask.draw();
     }
-
 
     if(mVideoSequence->isPlaying()){
         ofImage frame = mVideoSequence->getCurrentFrame();
@@ -367,7 +358,6 @@ void ofApp::switchBlendMode()
             ofDisableBlendMode();
         break;
     }
-
 }
 
 
@@ -471,9 +461,11 @@ void ofApp::mousePressed(int x, int y, int button){
                 mtempTriC = particle->getParticleId();
 
                 Triangle * tri = new Triangle();
+
                 tri->setParticleA( mTriangleManager->getParticle(mtempTriA) );
                 tri->setParticleB( mTriangleManager->getParticle(mtempTriB) );
                 tri->setParticleC( mTriangleManager->getParticle(mtempTriC) );
+
                 mTriangleManager->addTriangle(tri);
                 mTriangleManager->renderMesh();
                 mTriangleManager->generateTriangles();
@@ -556,7 +548,10 @@ void ofApp::mouseReleased(int x, int y, int button){
            mTriangleManager->updateTargetPositions();
            mTriangleManager->renderMesh();
         }
+
+        mTriangleManager->generateTriangles();
     }
+
 
 }
 
