@@ -44,13 +44,19 @@ namespace tri{
     }
 
     void TriangleManager::drawMesh(){
-        mMesh.draw();
+        mMesh.enableColors();
+	mMesh.draw();
     }
 
-    void TriangleManager::drawWireFrameMesh(){
-       ofSetColor(255);
+    void TriangleManager::drawWireFrameMesh(bool white){
+       if(white){
+           mMesh.disableColors();
+           ofSetLineWidth(0.5);
+       }else{
+	    mMesh.enableColors();
+       }
        mMesh.drawWireframe();
-     }
+     }    
 
      void TriangleManager::generateTriangles(){
        for(auto & particle : mParticles){
@@ -61,14 +67,6 @@ namespace tri{
               particle->setInsideTriangle(true);
             }
           }
-        }
-
-        ///set the same tween for each triangle
-        for(auto & tri : mTriangles){
-          int type = (int)ofRandom(0, 3);
-          tri->getParticleA()->setTweenType(type);
-          tri->getParticleB()->setTweenType(type);
-          tri->getParticleC()->setTweenType(type);
         }
 
      }

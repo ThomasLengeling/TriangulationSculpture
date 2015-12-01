@@ -131,7 +131,7 @@ namespace tri{
 
       void drawMesh();
 
-      void drawWireFrameMesh();
+      void drawWireFrameMesh(bool);
 
       void renderMesh();
 

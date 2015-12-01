@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "ofxOsc.h"
@@ -29,11 +31,14 @@
 #include "Triangle.h"
 #include "Particle.h"
 #include "Masker.h"
-#include "VideoSequence.h"
+#include "VideoManager.h"
+#include "Manager.hpp"
 
-
+#define NUM_RANDOM 8
+#define NUM_RAND 6
 #define PORT 12345
 #define NUM_MSG_STRINGS 3
+#define STR_MOOD "mood"
 
 class ofApp : public ofBaseApp{
 
@@ -118,7 +123,7 @@ class ofApp : public ofBaseApp{
 		//JSON for writing and reading points
     ofxJSONElement 		    mJSON;
 
-    void                  loadJSON();
+    void                  loadJSON(bool);
     void 				  saveJSON();
 
 
@@ -143,22 +148,50 @@ class ofApp : public ofBaseApp{
     int mtempTriC;
 
 
-    //---Video
-    video::VideoSequenceRef  mVideoSequence;
-    bool                     mDrawVideo;
-
-
 
 
     //-----------MASK-----------------------------------
     Masker mask;
-    bool enableAddPartMaskL;
-    bool enableAddPartMaskR;
+    bool enableAddPartMaskLU;
+    bool enableAddPartMaskRU;
+    bool enableAddPartMaskLD;
+    bool enableAddPartMaskRD;
 
-    bool enableViewFoto;
     ofImage foto;
 
+    bool enableViewFoto;
+
     bool    mDrawMask;
+    bool    mFinishMask;
 
+    //-----------VIDEO-----------------------------------
+    VideoManager player;
+    bool enabledVideo;
+    ofVideoPlayer ppp;
 
+    void setVideo(int);
+
+    //-----------MOOD-----------------------------------
+    void setMood(int);
+    bool setWhiteWire;
+    int startDelay;
+    bool enableStartDelay;
+    void drawStartDelay();
+
+    bool enableLineDelay;
+    vector<int> lineDelay;
+    void drawLineDelay();
+    int numTriangles;
+    vector<float> lineStep;
+    bool lineGoesUp;
+    vector<int> randomLine;
+    int rando;
+    ofColor color1;
+    ofColor color2;
+    ofColor color3;
+
+    bool enableFacetas;
+    void drawFacetas();
+
+    Manager man;
 };

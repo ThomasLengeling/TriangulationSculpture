@@ -5,17 +5,17 @@
 	<Host_02>168</Host_02>
 	<Host_03>1</Host_03>
 	<Host_04>1</Host_04>
-<WireFrame_Mesh>0</WireFrame_Mesh>
-	<Line_Width>3</Line_Width>
+<WireFrame_Mesh>1</WireFrame_Mesh>
+	<Line_Width>1</Line_Width>
 	<Draw_Mesh>1</Draw_Mesh>
 	<Debug_Mesh>0</Debug_Mesh>
 <Alpha_Blend>0</Alpha_Blend>
 	<Additive_Blend>0</Additive_Blend>
 	<UnknownName>1</UnknownName>
 	<Color_Transition>0.01</Color_Transition>
-	<Target_Transition>0.002</Target_Transition>
-<Alpha_Mode>2</Alpha_Mode>
-<Color_Inc>0.0045</Color_Inc>
-	<Img_Sequence>0</Img_Sequence>
+	<Target_Transition>0.01</Target_Transition>
+<Alpha_Mode>3</Alpha_Mode>
+<Color_Inc>0.001</Color_Inc>
+	<Img_Sequence>3</Img_Sequence>
 	<Target_Stop>0</Target_Stop>
 </GUI>

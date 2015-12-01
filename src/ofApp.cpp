@@ -1,7 +1,6 @@
 #include "ofApp.h"
 
 using namespace tri;
-using namespace video;
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -37,22 +36,45 @@ void ofApp::setup(){
   setupGUI();
 
   setupOSC();
+  
+   //MASK
+    mask.setup();
 
-  loadJSON();
+  loadJSON(setWhiteWire);
+
+  mTriangleManager->generateTriangles();
 
   foto.loadImage("foto.jpg");
-
+  enableViewFoto = false;
   mDrawMask = false;
+  mFinishMask = false;
+
+  enableAddPartMaskLU = false;
+  enableAddPartMaskLD = false;
+  enableAddPartMaskRU = false;
+  enableAddPartMaskLU = false;
 
 
-  mVideoSequence = VideoSequence::create();
+  //-----------VIDEO-----------------------------------
+  player.setup();
+  enabledVideo = false;
 
-  //mVideoSequence->loadSequenceFromDir("movie01");
+  //----------MOOD------------------------------------
+  setWhiteWire = false;
+  startDelay = 0;
+  enableStartDelay = false;
 
-  mVideoSequence->setLooping(false);
-  mVideoSequence->setFrameRate(30.f);
-  mVideoSequence->pause();
+  enableLineDelay = false;
+  for(int i = 0; i < 3; i++){
+	lineDelay.push_back(0);
+  }
+  numTriangles = 0;
+  for(int i = 0; i < NUM_RAND - 1; i ++){
+ 	lineStep.push_back(1.0/(300.0 - i*2*20));
+  }
+  lineGoesUp = true;
 
+  enableFacetas = false;
 }
 
 void ofApp::setupGUI(){
@@ -83,6 +105,8 @@ void ofApp::setupGUI(){
 
     gui.add(mWireFrameMesh.setup("WireFrame Mesh", true));
     gui.add(mWireFrameWidth.setup("Line Width", 3, 1, 6));
+    gui.add(mButtonGenerateTriangles.setup("Generate Inside"));
+    gui.add(mButtonMoveTriangles.setup("Enable Move"));
     gui.add(mTimeColorSlider.setup("Color Inc", 0.001, 0.0, 0.1));
     gui.add(mImgIndexSlider.setup("Img Sequence", 0, 0, 4));
     gui.add(mSpeedTargetSlider.setup("Target Transition", 0.001, 0, 0.1));
@@ -91,17 +115,13 @@ void ofApp::setupGUI(){
     mHideGUI = true;
 
     gui.loadFromFile("settings.xml");
-
-    //MASK
-    mask.setup();
-    enableAddPartMaskL = false;
-    enableAddPartMaskR = false;
 }
 
 //--------------------------------------------------------------
 void ofApp::clearMesh(){
     mTriangleManager->cleanMesh();
     mTriangleManager->renderMesh();
+    mask.clear();
 }
 
 void ofApp::saveGUIValues(){
@@ -127,9 +147,13 @@ void ofApp::setupOSC()
 	current_msg_string = 0;
 }
 
-void ofApp::loadJSON(){
-
-    std::string file = "mesh.json";
+void ofApp::loadJSON(bool white){
+    std::string file;
+    if(white){
+	file = "white.json";
+    }else{
+        file = "mesh.json";
+    }
     bool parsingSuccessful = mJSON.open(file);
     if(parsingSuccessful){
          ofLogNotice("ofApp::setup") << "successfully read: "<<file<<std::endl;
@@ -170,8 +194,49 @@ void ofApp::loadJSON(){
         mTriangleManager->addTriangle(tri);
     }
 
+    for (const Json::Value & particlesLU : mJSON["ParticlesLU"])  // iterate over "points"
+    {
+        int px = particlesLU["px"].asFloat();
+        int py = particlesLU["py"].asFloat();
 
-    mTriangleManager->generateTriangles();
+        ofVec3f tempLU;
+	tempLU.set(px, py, 0);
+
+        mask.addParticleLU(tempLU);
+    }
+
+    for (const Json::Value & particlesLD : mJSON["ParticlesLD"])  // iterate over "points"
+    {
+        int px = particlesLD["px"].asFloat();
+        int py = particlesLD["py"].asFloat();
+
+        ofVec3f tempLD;
+        tempLD.set(px, py, 0);
+
+        mask.addParticleLD(tempLD);
+    }
+
+    for (const Json::Value & particlesRU : mJSON["ParticlesRU"])  // iterate over "points"
+    {
+        int px = particlesRU["px"].asFloat();
+        int py = particlesRU["py"].asFloat();
+
+        ofVec3f tempRU;
+        tempRU.set(px, py, 0);
+
+        mask.addParticleRU(tempRU);
+    }
+
+    for (const Json::Value & particlesRD : mJSON["ParticlesRD"])  // iterate over "points"
+    {
+        int px = particlesRD["px"].asFloat();
+        int py = particlesRD["py"].asFloat();
+
+        ofVec3f tempRD;
+        tempRD.set(px, py, 0);
+
+        mask.addParticleRD(tempRD);
+    }
 
     mTriangleManager->renderMesh();
     //mTriangleManager->updateColorMesh();
@@ -209,7 +274,61 @@ void ofApp::saveJSON(){
      mJSON["Triangles"] = triangles;
   }
 
+if( mask.getNumParticlesLU() > 4){
+      std::cout<<"num PartLU"<<mask.getNumParticlesLU()<<std::endl;
+      Json::Value particlesLU(Json::arrayValue);
+      ofVec3f tempLU;
+      for (int j = 4; j < mask.getNumParticlesLU() -1; j++){
+            Json::Value ids(Json::objectValue);
+            tempLU.set(mask.getPosLU(j));
+            ids["px"] = tempLU.x;
+            ids["py"] = tempLU.y;
+            particlesLU.append(ids);
+      }
+     mJSON["ParticlesLU"] = particlesLU;
+  }
 
+if( mask.getNumParticlesLD() > 4){
+      std::cout<<"num PartLD"<<mask.getNumParticlesLD()<<std::endl;
+      Json::Value particlesLD(Json::arrayValue);
+      ofVec3f tempLD;
+      for (int j = 4; j < mask.getNumParticlesLD() -1; j++){
+            Json::Value ids(Json::objectValue);
+            tempLD.set(mask.getPosLD(j));
+            ids["px"] = tempLD.x;
+            ids["py"] = tempLD.y;
+            particlesLD.append(ids);
+      }
+     mJSON["ParticlesLD"] = particlesLD;
+  }
+
+if( mask.getNumParticlesRU() > 4){
+      std::cout<<"num PartRU"<<mask.getNumParticlesRU()<<std::endl;
+      Json::Value particlesRU(Json::arrayValue);
+      ofVec3f tempRU;
+      for (int j = 4; j < mask.getNumParticlesRU() -1; j++){
+            Json::Value ids(Json::objectValue);
+            tempRU.set(mask.getPosRU(j));
+            ids["px"] = tempRU.x;
+            ids["py"] = tempRU.y;
+            particlesRU.append(ids);
+      }
+     mJSON["ParticlesRU"] = particlesRU;
+  }
+
+if( mask.getNumParticlesRD() > 4){
+      std::cout<<"num PartRD"<<mask.getNumParticlesRD()<<std::endl;
+      Json::Value particlesRD(Json::arrayValue);
+      ofVec3f tempRD;
+      for (int j = 4; j < mask.getNumParticlesRD() -1; j++){
+            Json::Value ids(Json::objectValue);
+            tempRD.set(mask.getPosRD(j));
+            ids["px"] = tempRD.x;
+            ids["py"] = tempRD.y;
+            particlesRD.append(ids);
+      }
+     mJSON["ParticlesRD"] = particlesRD;
+  }
 
   if (!mJSON.save("mesh.json", true)){
     ofLogNotice("ofApp::setup") << "mesh.json written unsuccessfully.";
@@ -222,7 +341,6 @@ void ofApp::saveJSON(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
 //  mTriangleManager->updateColorMesh();
     mTriangleManager->renderMesh();
 
@@ -230,6 +348,10 @@ void ofApp::update(){
     mTriangleManager->setImageSeq(mImgIndexSlider);
     mTriangleManager->setIncrTargetTimer(mSpeedTargetSlider);
     mTriangleManager->toggleTimer(mStopTargetTimer);
+
+    if(mButtonMoveTriangles){
+         mTriangleManager->generateTriangles();
+    }
 
     // Osc Receiver
     // hide old messages
@@ -246,6 +368,15 @@ void ofApp::update(){
 		mReceiver.getNextMessage(&m);
 		string msg_string;
 		msg_string = m.getAddress();
+		if(m.getAddress() == "mood"){
+		    int arg1 = m.getArgAsInt32(0);
+       		    if(arg1 >= 0 && arg1 < 4){
+			setVideo(arg1);
+		    }
+		    if(arg1 >= 4 && arg1 < 9){
+			setMood(arg1);
+		    }
+		}
 		msg_string += ": ";
 			for(int i = 0; i < m.getNumArgs(); i++){
 				// get the argument type
@@ -271,67 +402,26 @@ void ofApp::update(){
 			msg_strings[current_msg_string] = "";
 		}
 
+    //-----------VIDEO-----------------------------------
+    player.update();
 
-    if(mVideoSequence->isPlaying()){
-        mVideoSequence->update();
-    }
-}
-
-void ofApp::draw(){
-
-   ofBackground(ofColor(0));
-
-   switchBlendMode();
-
-    if(enableViewFoto){
-        ofPushStyle();
-	      ofSetColor(255, 255, 255);
-	      foto.draw(250, 50, 480, 640);
-        ofPopStyle();
-    }
-    if(mDrawMesh){
-      mTriangleManager->drawMesh();
-    }
-
-    if(mWireFrameMesh){
-      ofSetLineWidth(int(mWireFrameWidth));
-      mTriangleManager->drawWireFrameMesh();
-    }
-
-    if(mDebugMesh){
-      mTriangleManager->drawPoints();
-    }
-
-//OSC Receiver
+    //----------LineUpdate-----------------------------
 /*
-	string buf;
-	buf = "listening for osc messages on port" + ofToString(PORT);
-	ofDrawBitmapString(buf, 400, 20);
-
-	for(int i = 0; i < NUM_MSG_STRINGS; i++){
-		ofDrawBitmapString(msg_strings[i], 400, 40 + 15 * i);
-	}
-
-	for (int i = 0; i < 4; i++) {
-		ofDrawBitmapString(ofToString(messages[0]), messages[i+1], messages[i+2]);
-	}
+    if(lineDelay[0] < 300){
+	lineDelay[0] ++;
+    }
+    if(lineDelay[0] == 300 && lineDelay[1] < 300){
+	lineDelay[1] ++;
+    }
+    if(lineDelay[1] == 300 && lineDelay[2] < 300){
+	lineDelay[2] ++;
+    }
 */
 
-	//MASK
-    if(mDrawMask){
-        mask.draw();
+    if(enableFacetas){
+	man.update();
+	man.checkAll();
     }
-
-    if(mVideoSequence->isPlaying()){
-        ofImage frame = mVideoSequence->getCurrentFrame();
-        frame.draw(0, 0);
-    }
-
-        //GUI
-    if( !mHideGUI ){
-        gui.draw();
-    }
-
 }
 
 //--------------------------------------------------------------
@@ -358,8 +448,88 @@ void ofApp::switchBlendMode()
             ofDisableBlendMode();
         break;
     }
+
 }
 
+
+void ofApp::draw(){
+
+   ofBackground(ofColor(0));
+
+   switchBlendMode();
+
+    if(enableViewFoto){
+        ofPushStyle();
+	      ofSetColor(255, 255, 255);
+	      foto.draw(250, 20, 520, 730);
+        ofPopStyle();
+    }
+    if(mDrawMesh){
+      mTriangleManager->drawMesh();
+    }
+
+    if(mWireFrameMesh){
+      ofSetLineWidth(int(mWireFrameWidth));
+      mTriangleManager->drawWireFrameMesh(setWhiteWire);
+    }
+
+    if(mDebugMesh){
+      mTriangleManager->drawPoints();
+    }
+
+
+    if( !mHideGUI ){
+        gui.draw();
+    }
+
+//OSC Receiver
+
+	string buf;
+	buf = "listening for osc messages on port" + ofToString(PORT);
+	ofDrawBitmapString(buf, 400, 20);
+	for(int i = 0; i < NUM_MSG_STRINGS; i++){
+		ofDrawBitmapString(msg_strings[i], 400, 40 + 15 * i);
+	}
+
+	for (int i = 0; i < 4; i++) {
+		ofDrawBitmapString(ofToString(messages[0]), messages[i+1], messages[i+2]);
+	}
+	
+	//VIDEO
+    if(enabledVideo){
+	player.draw();
+    }
+    if(enableStartDelay){
+	drawStartDelay();
+    }
+    if(enableLineDelay){
+        drawLineDelay();
+    }
+    if(enableFacetas){
+        drawFacetas();
+    }
+	//MASK
+
+    if(mDrawMask){
+        mask.draw(mFinishMask);
+    }
+	/*ofSetColor(255, 255, 255);
+	ofDrawBitmapString(ofToString(mask.getNumParticlesLU()), 300, 20);
+	ofDrawBitmapString(ofToString(mask.getNumParticlesLD()), 300, 30);
+	ofDrawBitmapString(ofToString(mask.getNumParticlesRU()), 300, 40);
+	ofDrawBitmapString(ofToString(mask.getNumParticlesRD()), 300, 50);
+
+	for(int i = 0; i < mask.getNumParticlesLU(); i ++){
+	     ofDrawBitmapString(ofToString(mask.getPosLU(i).x), 300, 70 + (i * 10));
+	     ofDrawBitmapString(ofToString(mask.getPosLU(i).y), 350, 70 + (i * 10));
+	}
+*/
+        //GUI
+    if( !mHideGUI ){
+        gui.draw();
+    }
+
+}
 
 //--------------------------------------------------------------
 void ofApp::exit()
@@ -380,18 +550,36 @@ void ofApp::keyPressed(int key){
     }
     else if(key == 'g'){
         mHideGUI = !mHideGUI;
+    }else if(key == '2'){
+        gui.loadFromFile("settings.xml");
     }else if( key == 'y'){
       enableTargetParticle = true;
     }else if(key == 'l'){
-        enableAddPartMaskL = true;
+        enableAddPartMaskLU = true;
+    }else if(key == 'L'){
+        enableAddPartMaskLD = true;
     }else if(key == 'r'){
-        enableAddPartMaskR = true;
+        enableAddPartMaskRU = true;
+    }else if(key == 'R'){
+        enableAddPartMaskRD = true;
     }else if(key == '1'){
         mDrawMask = !mDrawMask;
-    }else if(key == '2'){
-        mDrawVideo = true;
-        mVideoSequence->play();
-        ofLogVerbose("Start Video");
+    }else if(key == 'f'){
+        enableViewFoto = !enableViewFoto;
+    }else if(key == '0'){
+	mFinishMask = !mFinishMask;
+    }else if(key == '6'){
+        enabledVideo = !enabledVideo;
+ 	player.play(0);
+    }else if(key == '7'){
+        enabledVideo = !enabledVideo;
+        player.play(1);
+    }else if(key == '8'){
+        enabledVideo = !enabledVideo;
+        player.play(2);
+    }else if(key == '9'){
+        enabledVideo = !enabledVideo;
+        player.play(3);
     }
 
 
@@ -410,9 +598,13 @@ void ofApp::keyReleased(int key){
     }else if( key == 'y'){
       enableTargetParticle = true;
     }else if(key == 'l'){
-      enableAddPartMaskL = false;
+      enableAddPartMaskLU = false;
     }else if(key == 'r'){
-      enableAddPartMaskR = false;
+      enableAddPartMaskRU = false;
+    }else if(key == 'L'){
+      enableAddPartMaskLD = false;
+    }else if(key == 'R'){
+      enableAddPartMaskRD = false;
     }
 
     if(key == 'j'){
@@ -461,11 +653,9 @@ void ofApp::mousePressed(int x, int y, int button){
                 mtempTriC = particle->getParticleId();
 
                 Triangle * tri = new Triangle();
-
                 tri->setParticleA( mTriangleManager->getParticle(mtempTriA) );
                 tri->setParticleB( mTriangleManager->getParticle(mtempTriB) );
                 tri->setParticleC( mTriangleManager->getParticle(mtempTriC) );
-
                 mTriangleManager->addTriangle(tri);
                 mTriangleManager->renderMesh();
                 mTriangleManager->generateTriangles();
@@ -518,22 +708,29 @@ void ofApp::mousePressed(int x, int y, int button){
             mTargetCounter = 0;
 
         }
-    }else if(enableAddPartMaskL){
-      ofPushStyle();
-      ofSetColor(255, 0, 0);
-      ofCircle(1000, 0, 20);
-      ofPopStyle();
-
+    }else if(enableAddPartMaskLU){
       Particle * particle = mTriangleManager->getNearestParticle(ofVec3f(x, y, 0));
       particle->setColor( ofColor(255, 0, 0));
       if(particle != NULL){
-        mask.addParticleL(ofVec3f(particle->getX(), particle->getY(), 0));
+        mask.addParticleLU(ofVec3f(particle->getX(), particle->getY(), 0));
       }
-    }else if(enableAddPartMaskR){
+    }else if(enableAddPartMaskLD){
+      Particle * particle = mTriangleManager->getNearestParticle(ofVec3f(x, y, 0));
+      particle->setColor( ofColor(255, 0, 0));
+      if(particle != NULL){
+        mask.addParticleLD(ofVec3f(particle->getX(), particle->getY(), 0));
+      }
+    }else if(enableAddPartMaskRU){
       Particle * particle = mTriangleManager->getNearestParticle(ofVec3f(x, y, 0));
     	particle->setColor( ofColor(255, 0, 0));
 	     if(particle != NULL){
-	        mask.addParticleL(ofVec3f(particle->getX(), particle->getY(), 0));
+	        mask.addParticleRU(ofVec3f(particle->getX(), particle->getY(), 0));
+        }
+    }else if(enableAddPartMaskRD){
+      Particle * particle = mTriangleManager->getNearestParticle(ofVec3f(x, y, 0));
+        particle->setColor( ofColor(255, 0, 0));
+             if(particle != NULL){
+                mask.addParticleRD(ofVec3f(particle->getX(), particle->getY(), 0));
         }
     }
 
@@ -548,10 +745,7 @@ void ofApp::mouseReleased(int x, int y, int button){
            mTriangleManager->updateTargetPositions();
            mTriangleManager->renderMesh();
         }
-
-        mTriangleManager->generateTriangles();
     }
-
 
 }
 
@@ -579,3 +773,175 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
+
+//--------------------------------------------------------------
+void ofApp::setVideo(int i){
+	enableLineDelay = false;
+        enableFacetas = false;
+        enableStartDelay = false;
+        enableLineDelay = false;
+
+    if(i >= 0 && i < 4){
+	enabledVideo = true;
+	mDebugMesh = false;
+	mDrawMesh = false;
+        mWireFrameMesh = false;
+        mFinishMask = true;
+	mDrawMask = true; 
+    }
+    switch(i){
+    case 0  :
+       player.play(0);
+       break; 
+    case 1 :
+       player.play(1);
+       break;
+    case 2 :
+       player.play(2);
+       break;
+    case 3 :
+       player.play(3);
+       break;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::setMood(int i){
+    if(i == 8){
+ 	enabledVideo = false;
+    	enableLineDelay = false;
+    	enableFacetas = false;
+        enableStartDelay = true;
+	setWhiteWire = true;
+	clearMesh();
+        loadJSON(setWhiteWire);
+	enabledVideo = false;
+        mDebugMesh = false;
+        mDrawMesh = false;
+        mWireFrameMesh = true;
+        mFinishMask = true;
+        mDrawMask = true;
+	startDelay = 0;
+    }
+
+    if(i == 7){
+        enableLineDelay = false;
+        enableFacetas = false;
+        enableStartDelay = false;
+        enableLineDelay = true;
+        setWhiteWire = true;
+        clearMesh();
+        loadJSON(setWhiteWire);
+        enabledVideo = false;
+        mDebugMesh = false;
+        mDrawMesh = false;
+        mWireFrameMesh = false;
+        mFinishMask = true;
+        mDrawMask = false;
+	numTriangles = mTriangleManager->getNumberOfTriangles();
+	for(int i = 0; i < numTriangles; i++){
+	    randomLine.push_back(i);
+	}
+	for(int i = 0; i < 3; i ++){
+	    lineDelay[i] = 0;
+	}
+	std::random_shuffle(randomLine.begin(), randomLine.end());
+        rando = rand() % 8 + 24;
+    }
+
+    if(i == 6){
+	enabledVideo = false;
+        enableLineDelay = false;
+        enableStartDelay = false;
+        setWhiteWire = true;
+        clearMesh();
+        loadJSON(setWhiteWire);
+        enabledVideo = false;
+        mDebugMesh = false;
+        mDrawMesh = true;
+        mWireFrameMesh = false;
+        mFinishMask = true;
+        mDrawMask = false;
+	enableFacetas = true;
+        numTriangles = mTriangleManager->getNumberOfTriangles();
+	if(man.triangulos.size() == 0){
+	    for(int i = 0; i < numTriangles; i ++){
+	        man.addTriangulo(	mTriangleManager->getTriangle(i)->getPositionA(),
+		   		    	mTriangleManager->getTriangle(i)->getPositionB(),
+					mTriangleManager->getTriangle(i)->getPositionC());
+	    }
+	    man.setup();
+	}
+	man.begin();
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::drawStartDelay(){
+    ofPushStyle();
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+    ofSetColor(0, 0, 0, 255 - startDelay);
+    ofRect(0, 0, 1024, 768);
+    ofPopStyle();
+    startDelay ++;
+    if(startDelay >= 255){
+        startDelay = 0;
+        enableStartDelay = false;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::drawLineDelay(){
+ofPushStyle();
+ofSetLineWidth(0.5);
+    for(int j = 0; j < 1/*NUM_RAND*/; j ++){
+        for(int i = 0; i < ((j+1) * rando); i++){
+	    ofVec3f posA = mTriangleManager->getTriangle(randomLine[i])->getPositionA();
+	    ofVec3f posB = mTriangleManager->getTriangle(randomLine[i])->getPositionB();
+	    ofVec3f posC = mTriangleManager->getTriangle(randomLine[i])->getPositionC();
+	    
+	    ofSetColor(200, 220, 255);     
+	    ofLine(posA.x, posA.y, posA.x + ((posB.x - posA.x) * lineStep[j] * ofMap(lineDelay[0], 0, 300, j*20, 300 - j*20, true)), posA.y + ((posB.y - posA.y) * lineStep[j] * 		    ofMap(lineDelay[0], 0, 300, j*20, 300 - j*20, true)));
+	    ofLine(posB.x, posB.y, posB.x + ((posC.x - posB.x) * lineStep[j] * ofMap(lineDelay[1], 0, 300, j*20, 300 - j*20, true)), posB.y + ((posC.y - posB.y) * lineStep[j] * 		    ofMap(lineDelay[1], 0, 300, j*20, 300 - j*20, true)));
+	    ofLine(posC.x, posC.y, posC.x + ((posA.x - posC.x) * lineStep[j] * ofMap(lineDelay[2], 0, 300, j*20, 300 - j*20, true)), posC.y + ((posA.y - posC.y) * lineStep[j] * 		    ofMap(lineDelay[2], 0, 300, j*20, 300 - j*20, true)));	    
+        }
+    }
+    if(lineGoesUp && lineDelay[0] < 300){
+	lineDelay[0] = lineDelay[0] + 1;	
+    }
+    if(lineGoesUp && lineDelay[0] == 300 && lineDelay[1] < 300){
+	lineDelay[1] ++;
+    }
+    if(lineGoesUp && lineDelay[1] == 300 && lineDelay[2] < 300){
+	lineDelay[2] ++;
+    }
+    if(lineGoesUp && lineDelay[2] >= 300){
+        lineGoesUp = false;
+    }
+    if(!lineGoesUp && lineDelay[2] > 0){
+	lineDelay[2] --;
+    }
+    if(!lineGoesUp && lineDelay[2] == 0 && lineDelay[1] > 0){
+	lineDelay[1] --;
+    }
+    if(!lineGoesUp && lineDelay[1] == 0 && lineDelay[0] > 0){
+	lineDelay[0] --;
+    }
+    if(!lineGoesUp && lineDelay[0] == 0){
+	lineGoesUp = true;
+	std::random_shuffle(randomLine.begin(), randomLine.end());
+        rando = rand() % 8 + 24;
+    }
+ofDrawBitmapString(ofToString(numTriangles), 500, 100);
+ofDrawBitmapString(ofToString(lineDelay), 500, 110);
+ofDrawBitmapString(ofToString(lineStep), 500, 120);
+ofPopStyle();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawFacetas(){
+	man.draw();
+	//ofDrawBitmapString(ofToString(numTriangles), 800, 20);
+	ofDrawBitmapString(ofToString(man.triangulos.size()), 800, 30);
+}
+
