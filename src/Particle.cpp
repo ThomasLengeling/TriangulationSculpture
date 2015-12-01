@@ -25,8 +25,13 @@ namespace tri{
         mCol = ofColor(255);
         mInsideTriangle = false;
         mTargetPoint = false;
-
         mIncType = 0;
+
+//      timerMulti = ofRandom(0, 1);
+	mTimer = ofRandom(0,1);
+        mTimeInc = ofRandom(0, 0.02);
+        mTimerDir = 1;
+        mStopTimer = false;
     }
 
     void Particle::setTweenType(int type){
@@ -105,15 +110,17 @@ namespace tri{
 
 
     void Particle::update(float time){
+//	time = time * timerMulti;
+//        mTime = mTime * timerMulti;
       if(mTargetIndex != -1){
         switch(mIncType){
           case 0:
-            mMovingPos.x = (mTargetPos.x - mOriginalPos.x) * (time) + mOriginalPos.x;
-            mMovingPos.y = (mTargetPos.y - mOriginalPos.y) * (time) + mOriginalPos.y;
+            mMovingPos.x = (mTargetPos.x - mOriginalPos.x) * (mTimer) + mOriginalPos.x;
+            mMovingPos.y = (mTargetPos.y - mOriginalPos.y) * (mTimer) + mOriginalPos.y;
           break;
           case 1:
           {
-            float mTime = time*time + time;
+            float mTime = mTimer*mTimer + mTimer;
             if(mTime < 1.0){
               mMovingPos.x = (mTargetPos.x - mOriginalPos.x) * (mTime) + mOriginalPos.x;
               mMovingPos.y = (mTargetPos.y - mOriginalPos.y) * (mTime) + mOriginalPos.y;
@@ -169,5 +176,23 @@ namespace tri{
        }
 
     }
+
+
+void Particle::updateTimers(float newTime){
+
+      mTimer += newTime * mTimerDir;
+
+      if(mTimer >= 1.0){
+        mTimerDir *=-1;
+      }
+      if(mTimer <= 0.0){
+        mTimerDir *=-1;
+      }
+
+    }
+
+
+
+
 
   }

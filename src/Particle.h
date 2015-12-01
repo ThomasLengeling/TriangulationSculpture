@@ -78,6 +78,11 @@ namespace tri{
     float  getZ();
 
     void drawPoint();
+void updateTimers(float);
+float mTimer;
+float mTimeInc;
+int mTimerDir;
+bool mStopTimer;
 
   private:
     ofVec3f     mPos;  //original
@@ -92,7 +97,7 @@ namespace tri{
 
     //Tween type
     int         mIncType;
-
+    float timerMulti;
     bool        mInsideTriangle;
 
     bool        mTargetPoint;
@@ -101,6 +106,7 @@ namespace tri{
     int         mTargetIndex;
 
     float       mTime;
+
 
   };
 

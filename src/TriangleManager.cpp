@@ -76,9 +76,9 @@ namespace tri{
       //  ofLogVerbose("Render Mesh: ")<<std::endl;
         mMesh.clear();
 
-        if(mStopTimer){
-          updateTimers();
-        }
+//        if(mStopTimer){
+//          updateTimers();
+//        }
 
         mImagesSequences.at(mCurrentImgSeq)->update();
 
@@ -92,7 +92,6 @@ namespace tri{
             float posCX = tri->getParticleC()->getX();
             float posCY = tri->getParticleC()->getY();
 
-
             //ofFloatColor col = mImagesSequences.at(0)->getNextColor(mapX, mapY);
             float centerX = (tri->getParticleA()->getX() +  tri->getParticleB()->getX() +  tri->getParticleC()->getY())/3.0;
             float centerY = (tri->getParticleA()->getY() +  tri->getParticleB()->getY() +  tri->getParticleC()->getY())/3.0;
@@ -100,8 +99,11 @@ namespace tri{
             int mapX = ofMap(centerX, 0.0, ofGetWidth(), 0.0, 512.0);
             int mapY = ofMap(centerY, 0.0, ofGetHeight(), 0.0, 512.0);
 
-
             if( tri->getParticleA()->isInsideTriangle()){
+		if(mStopTimer){
+                    tri->getParticleA()->updateTimers(mTimeInc);
+                }
+
                 tri->getParticleA()->update(mTimer);
                 ofVec3f targetPos =  tri->getParticleA()->getPosition();
 
@@ -117,7 +119,11 @@ namespace tri{
             //mMesh.addColor( mImagesSequences.at(0)->getNextColor( (posAX/ofGetWidth())*512, (posAY/ofGetHeight())*512));
 
              if( tri->getParticleB()->isInsideTriangle()){
-                tri->getParticleB()->update(mTimer);
+                if(mStopTimer){
+                    tri->getParticleB()->updateTimers(mTimeInc);
+                }
+
+		tri->getParticleB()->update(mTimer);
                 ofVec3f targetPos =  tri->getParticleB()->getPosition();
 
                 if( tri->getParticleB()->isTargetPoint()){
@@ -132,7 +138,10 @@ namespace tri{
            // mMesh.addColor( mImagesSequences.at(0)->getNextColor( (posBX/ofGetWidth())*512, (posBY/ofGetHeight())*512));
 
             if( tri->getParticleC()->isInsideTriangle()){
-                tri->getParticleC()->update(mTimer);
+                if(mStopTimer){
+                    tri->getParticleC()->updateTimers(mTimeInc);
+                }
+		tri->getParticleC()->update(mTimer);
                 ofVec3f targetPos =  tri->getParticleC()->getPosition();
 
                 if( tri->getParticleC()->isTargetPoint()){
