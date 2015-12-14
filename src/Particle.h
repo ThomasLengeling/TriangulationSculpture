@@ -81,6 +81,7 @@ namespace tri{
 void updateTimers(float);
 float mTimer;
 float mTimeInc;
+float mult;
 int mTimerDir;
 bool mStopTimer;
 

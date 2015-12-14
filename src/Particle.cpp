@@ -29,8 +29,9 @@ namespace tri{
 
 //      timerMulti = ofRandom(0, 1);
 	mTimer = ofRandom(0,1);
-        mTimeInc = ofRandom(0, 0.02);
+        mTimeInc = 0.01;
         mTimerDir = 1;
+	mult = ofRandom(0.1, 0.5);
         mStopTimer = false;
     }
 
@@ -180,13 +181,14 @@ namespace tri{
 
 void Particle::updateTimers(float newTime){
 
-      mTimer += newTime * mTimerDir;
+      mTimer += newTime * mTimerDir * mult;
 
       if(mTimer >= 1.0){
         mTimerDir *=-1;
       }
       if(mTimer <= 0.0){
         mTimerDir *=-1;
+	mult = ofRandom(0.1,0.5);
       }
 
     }

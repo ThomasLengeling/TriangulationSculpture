@@ -33,7 +33,7 @@
 #include "Masker.h"
 #include "VideoManager.h"
 #include "Manager.hpp"
-
+#include "Pelos.h"
 #define NUM_RANDOM 8
 #define NUM_RAND 6
 #define PORT 12345
@@ -179,6 +179,7 @@ class ofApp : public ofBaseApp{
     void drawStartDelay();
 
     bool enableLineDelay;
+    bool drawDelay;
     vector<int> lineDelay;
     void drawLineDelay();
     int numTriangles;
@@ -194,4 +195,9 @@ class ofApp : public ofBaseApp{
     void drawFacetas();
 
     Manager man;
+
+    Pelos pelos;  
+    bool enablePelos;
+    vector<ofVec3f> vectorPelos;
+
 };

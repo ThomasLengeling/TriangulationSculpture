@@ -65,6 +65,7 @@ void ofApp::setup(){
   enableStartDelay = false;
 
   enableLineDelay = false;
+  drawDelay = false;
   for(int i = 0; i < 3; i++){
 	lineDelay.push_back(0);
   }
@@ -75,6 +76,9 @@ void ofApp::setup(){
   lineGoesUp = true;
 
   enableFacetas = false;
+ 
+  pelos.setup();
+  enablePelos = false;
 }
 
 void ofApp::setupGUI(){
@@ -93,7 +97,7 @@ void ofApp::setupGUI(){
     gui.add(mHostSlider03.setup("Host 03", 1, 0, 255));
     gui.add(mHostSlider04.setup("Host 04", 1, 0, 255));
 
-    gui.add(mDrawMesh.setup("Draw Mesh", true));
+    gui.add(mDrawMesh.setup("Draw Mesh", false));
     gui.add(mDebugMesh.setup("Debug Mesh", false));
 
     gui.add(mBlendMode.setup("Alpha Mode", 0, 0, 5));
@@ -103,7 +107,7 @@ void ofApp::setupGUI(){
     gui.add(mButtonSaveJSON.setup("Save Mesh"));
     gui.add(mButtonResetMesh.setup("Reset Mesh"));
 
-    gui.add(mWireFrameMesh.setup("WireFrame Mesh", true));
+    gui.add(mWireFrameMesh.setup("WireFrame Mesh", false));
     gui.add(mWireFrameWidth.setup("Line Width", 3, 1, 6));
     gui.add(mButtonGenerateTriangles.setup("Generate Inside"));
     gui.add(mButtonMoveTriangles.setup("Enable Move"));
@@ -369,23 +373,33 @@ void ofApp::update(){
 		string msg_string;
 		msg_string = m.getAddress();
 		if(m.getAddress() == "mood"){
-		    int arg1 = m.getArgAsInt32(0);
+		    int arg1 = m.getArgAsInt64(0);
        		    if(arg1 >= 0 && arg1 < 4){
 			setVideo(arg1);
 		    }
-		    if(arg1 >= 4 && arg1 < 9){
+		    if(arg1 >= 4 && arg1 < 10){
 			setMood(arg1);
 		    }
 		}
+
+		if(m.getAddress() == "slider1"){
+		    int arg2 = m.getArgAsInt64(0);
+		    mSpeedTargetSlider = ofMap(arg2, 1, 254, 0, 1, true);
+		}
+		if(m.getAddress() == "slider2"){
+                    int arg2 = m.getArgAsInt64(0);
+                    mTimeColorSlider = ofMap(arg2, 1, 254, 0, 1, true);
+                }
+
 		msg_string += ": ";
 			for(int i = 0; i < m.getNumArgs(); i++){
 				// get the argument type
 				msg_string += m.getArgTypeName(i);
 				msg_string += ":";
 				// display the argument - make sure we get the right type
-				if(m.getArgType(i) == OFXOSC_TYPE_INT32){
-					msg_string += ofToString(m.getArgAsInt32(i));
-					messages[i] = m.getArgAsInt32(i);
+				if(m.getArgType(i) == OFXOSC_TYPE_INT64){
+					msg_string += ofToString(m.getArgAsInt64(i));
+					messages[i] = m.getArgAsInt64(i);
 				}
 				else if(m.getArgType(i) == OFXOSC_TYPE_FLOAT){
 				}
@@ -421,6 +435,10 @@ void ofApp::update(){
     if(enableFacetas){
 	man.update();
 	man.checkAll();
+    }
+
+    if(enablePelos){
+	pelos.update(vectorPelos);
     }
 }
 
@@ -508,6 +526,13 @@ void ofApp::draw(){
     if(enableFacetas){
         drawFacetas();
     }
+
+    if(enablePelos){
+ofPushMatrix();
+//ofScale(100, 100);
+	pelos.draw();
+ofPopMatrix();
+    }
 	//MASK
 
     if(mDrawMask){
@@ -529,6 +554,7 @@ void ofApp::draw(){
         gui.draw();
     }
 
+ofDrawBitmapString(ofToString(enablePelos), 900, 10);
 }
 
 //--------------------------------------------------------------
@@ -807,16 +833,19 @@ void ofApp::setVideo(int i){
 
 //--------------------------------------------------------------
 void ofApp::setMood(int i){
+    enabledVideo = false;
+    enableLineDelay = false;
+    enableFacetas = false;
+    enableStartDelay = false;
+    enabledVideo = false;
+    enablePelos = false;
+    mDebugMesh = false;
+    drawDelay = false;
     if(i == 8){
- 	enabledVideo = false;
-    	enableLineDelay = false;
-    	enableFacetas = false;
         enableStartDelay = true;
 	setWhiteWire = true;
 	clearMesh();
         loadJSON(setWhiteWire);
-	enabledVideo = false;
-        mDebugMesh = false;
         mDrawMesh = false;
         mWireFrameMesh = true;
         mFinishMask = true;
@@ -824,20 +853,37 @@ void ofApp::setMood(int i){
 	startDelay = 0;
     }
 
+    if(i == 9){
+	enableLineDelay = true;
+        setWhiteWire = true;
+        clearMesh();
+        loadJSON(setWhiteWire);
+        mDrawMesh = false;
+        mWireFrameMesh = false;
+        mFinishMask = true;
+        mDrawMask = true;
+        numTriangles = mTriangleManager->getNumberOfTriangles();
+        for(int i = 0; i < numTriangles; i++){
+            randomLine.push_back(i);
+        }
+        for(int i = 0; i < 3; i ++){
+            lineDelay[i] = 0;
+        }
+        std::random_shuffle(randomLine.begin(), randomLine.end());
+        rando = rand() % 8 + 24;
+	vectorPelos.clear();
+	enablePelos = true;
+    }
+
     if(i == 7){
-        enableLineDelay = false;
-        enableFacetas = false;
-        enableStartDelay = false;
         enableLineDelay = true;
         setWhiteWire = true;
         clearMesh();
         loadJSON(setWhiteWire);
-        enabledVideo = false;
-        mDebugMesh = false;
         mDrawMesh = false;
         mWireFrameMesh = false;
         mFinishMask = true;
-        mDrawMask = false;
+        mDrawMask = true;
 	numTriangles = mTriangleManager->getNumberOfTriangles();
 	for(int i = 0; i < numTriangles; i++){
 	    randomLine.push_back(i);
@@ -847,32 +893,40 @@ void ofApp::setMood(int i){
 	}
 	std::random_shuffle(randomLine.begin(), randomLine.end());
         rando = rand() % 8 + 24;
+	drawDelay = true;
     }
 
     if(i == 6){
-	enabledVideo = false;
-        enableLineDelay = false;
-        enableStartDelay = false;
         setWhiteWire = true;
         clearMesh();
         loadJSON(setWhiteWire);
-        enabledVideo = false;
-        mDebugMesh = false;
         mDrawMesh = true;
         mWireFrameMesh = false;
         mFinishMask = true;
-        mDrawMask = false;
+        mDrawMask = true;
 	enableFacetas = true;
         numTriangles = mTriangleManager->getNumberOfTriangles();
 	if(man.triangulos.size() == 0){
-	    for(int i = 0; i < numTriangles; i ++){
-	        man.addTriangulo(	mTriangleManager->getTriangle(i)->getPositionA(),
-		   		    	mTriangleManager->getTriangle(i)->getPositionB(),
-					mTriangleManager->getTriangle(i)->getPositionC());
+	    for(int j = 0; j < numTriangles; j ++){
+	        man.addTriangulo(	mTriangleManager->getTriangle(j)->getPositionA(),
+		   		    	mTriangleManager->getTriangle(j)->getPositionB(),
+					mTriangleManager->getTriangle(j)->getPositionC());
 	    }
 	    man.setup();
 	}
 	man.begin();
+    }
+
+    if(i == 5){
+	setWhiteWire = false;
+        if(!mDrawMesh){
+            clearMesh();
+            loadJSON(setWhiteWire);
+	    mSpeedTargetSlider = 0.002;
+        }
+        mWireFrameMesh = false;
+	mDrawMesh = true;
+	mStopTargetTimer = true;
     }
 }
 
@@ -894,17 +948,42 @@ void ofApp::drawStartDelay(){
 void ofApp::drawLineDelay(){
 ofPushStyle();
 ofSetLineWidth(0.5);
+ofVec3f tempo1;
+ofVec3f tempo2;
+ofVec3f tempo3;
+
     for(int j = 0; j < 1/*NUM_RAND*/; j ++){
         for(int i = 0; i < ((j+1) * rando); i++){
 	    ofVec3f posA = mTriangleManager->getTriangle(randomLine[i])->getPositionA();
 	    ofVec3f posB = mTriangleManager->getTriangle(randomLine[i])->getPositionB();
-	    ofVec3f posC = mTriangleManager->getTriangle(randomLine[i])->getPositionC();
-	    
+	    ofVec3f posC = mTriangleManager->getTriangle(randomLine[i])->getPositionC(); 
+	    if(drawDelay){
 	    ofSetColor(200, 220, 255);     
 	    ofLine(posA.x, posA.y, posA.x + ((posB.x - posA.x) * lineStep[j] * ofMap(lineDelay[0], 0, 300, j*20, 300 - j*20, true)), posA.y + ((posB.y - posA.y) * lineStep[j] * 		    ofMap(lineDelay[0], 0, 300, j*20, 300 - j*20, true)));
 	    ofLine(posB.x, posB.y, posB.x + ((posC.x - posB.x) * lineStep[j] * ofMap(lineDelay[1], 0, 300, j*20, 300 - j*20, true)), posB.y + ((posC.y - posB.y) * lineStep[j] * 		    ofMap(lineDelay[1], 0, 300, j*20, 300 - j*20, true)));
 	    ofLine(posC.x, posC.y, posC.x + ((posA.x - posC.x) * lineStep[j] * ofMap(lineDelay[2], 0, 300, j*20, 300 - j*20, true)), posC.y + ((posA.y - posC.y) * lineStep[j] * 		    ofMap(lineDelay[2], 0, 300, j*20, 300 - j*20, true)));	    
-        }
+            }
+	    if(enablePelos){
+		tempo1.set(posA.x + ((posB.x - posA.x) * lineStep[j] * ofMap(lineDelay[0], 0, 300, j*20, 300 - j*20, true)), posA.y + ((posB.y - posA.y) * lineStep[j] *                    ofMap(lineDelay[0], 0, 300, j*20, 300 - j*20, true)));
+		tempo2.set(posB.x + ((posC.x - posB.x) * lineStep[j] * ofMap(lineDelay[1], 0, 300, j*20, 300 - j*20, true)), posB.y + ((posC.y - posB.y) * lineStep[j] *                    ofMap(lineDelay[1], 0, 300, j*20, 300 - j*20, true)));
+		tempo3.set(posC.x + ((posA.x - posC.x) * lineStep[j] * ofMap(lineDelay[2], 0, 300, j*20, 300 - j*20, true)), posC.y + ((posA.y - posC.y) * lineStep[j] *                    ofMap(lineDelay[2], 0, 300, j*20, 300 - j*20, true)));
+	   
+		
+			if(lineGoesUp && lineDelay[0] < 300){
+           			vectorPelos.push_back(tempo1);
+    			}	
+			if(lineGoesUp && lineDelay[0] == 300 && lineDelay[1] < 300){
+            			vectorPelos.push_back(tempo2);
+        		}
+			if(lineGoesUp && lineDelay[1] == 300 && lineDelay[2] < 300){
+            			vectorPelos.push_back(tempo3);
+    			}
+			if(!lineGoesUp && vectorPelos.size() > 2){
+			    vectorPelos.pop_back();
+			    vectorPelos.pop_back();
+			}
+	     }
+	}
     }
     if(lineGoesUp && lineDelay[0] < 300){
 	lineDelay[0] = lineDelay[0] + 1;	
